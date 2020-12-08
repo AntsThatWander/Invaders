@@ -125,6 +125,7 @@ public class GameScreen extends Screen {
 	/**
 	 * Initializes basic screen properties, and adds necessary elements.
 	 */
+	@Override
 	public final void initialize() {
 		super.initialize();
 
@@ -161,37 +162,54 @@ public class GameScreen extends Screen {
 		super.run();
 
 		if (this.playerCode == 1) { // In player 1 mode, score changes per lives after each stage
-			if (lives.getPlayer1Value() > 0) {//when you're alive
-				this.score.addPlayer1Value(LIFE_SCORE * (this.lives.getPlayer1Value() - 1));
-				this.logger.info("Screen cleared with a score of " + this.score.getPlayer1Value() + " for Player1");
-			}
-			else { //when you're dead.
-				this.score.addPlayer1Value(-100);
-				this.logger.info("Game ended with a score of " + this.score.getPlayer1Value() + " for Player1");
+			if(clearManager(1, this.lives.getPlayer1Value())){
+				endManager();
 			}
 		}
 		else if (this.playerCode == 2) { //In player 2 mode, score changes per lives after each stage
-			if (lives.getPlayer1Value() > 0) {
-				this.score.addPlayer1Value(LIFE_SCORE * (this.lives.getPlayer1Value() - 1));
-				this.logger.info("Screen cleared with a score of " + this.score.getPlayer1Value() + "for Player1");
+			if(clearManager(1, this.lives.getPlayer1Value())
+					&& clearManager(2, this.lives.getPlayer2Value())){
+				endManager();
 			}
-			if (lives.getPlayer2Value() > 0) {
-				this.score.addPlayer2Value(LIFE_SCORE * (this.lives.getPlayer2Value() - 1));
-				this.logger.info("Screen cleared with a score of " + this.score.getPlayer2Value() + "for Player2");
-			}
-			if (lives.getPlayer1Value() <= 0 && lives.getPlayer2Value() <= 0) {
-				this.score.addPlayer1Value(-100);
-				this.logger.info("Game ended with a score of " + this.score.getPlayer1Value() + " for Player1");
-				this.score.addPlayer2Value(-100);
-				this.logger.info("Game ended with a score of " + this.score.getPlayer2Value() + " for Player2");
-			}
-
 
 		}
 
 		return this.returnCode;
 	}
 
+	private void add(int player, int num){
+		if(player == 1)
+			this.score.addPlayer1Value(num);
+		else
+			this.score.addPlayer2Value(num);
+	}
+
+	private void clearLog(int player){
+		if(player == 1)
+			this.logger.info("Screen cleared with a score of " + this.score.getPlayer1Value() + " for Player1");
+		else
+			this.logger.info("Screen cleared with a score of " + this.score.getPlayer2Value() + " for Player2");
+	}
+
+
+	private boolean clearManager(int player, int lives){
+		if(lives > 0) { //When you're alive.
+			add(player, LIFE_SCORE * (lives - 1));
+			clearLog(player);
+
+			return false; //trigger endManager
+		} else { //When you're die
+			return true;
+		}
+	}
+
+	private void endManager(){
+
+		this.logger.info("Game ended with a score of " + this.score.getPlayer1Value() + " for Player1");
+		if(this.playerCode == 2)
+			this.logger.info("Game ended with a score of " + this.score.getPlayer2Value() + " for Player2");
+
+	}
 	/**
 	 * Updates the elements on screen and checks for events.
 	 */
